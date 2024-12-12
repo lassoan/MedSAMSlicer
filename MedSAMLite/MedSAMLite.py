@@ -245,7 +245,6 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # Buttons
         self.ui.pbUpgrade.setVisible(False) # it's gliching so let's hide it :D
         self.ui.pbUpgrade.connect('clicked(bool)', self.upgrade)
-        self.ui.pbSendImage.connect('clicked(bool)', self.sendImage)
         self.ui.pbSegment.connect('clicked(bool)', self.applySegmentation)
 
         # Preprocessing
@@ -333,10 +332,7 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.updateGUIFromParameterNode()
 
     def upgrade(self):
-        self.logic.run_on_background(self.logic.upgrade, (True,), 'Checking for updates...')
-
-    def sendImage(self):
-        self.logic.sendImage(partial=False)
+        self.logic.run_on_background(self.logic.upgrade, (True,), 'Checking for updates...')       
 
     def applySegmentation(self):
         if not self._parameterNode.segmentationNode:
@@ -344,11 +340,7 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self._parameterNode.segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(self._parameterNode.volumeNode)
 
         if self._parameterNode.embeddingState == 'SINGLE':
-            continueSingle = QMessageBox.question(None,'', "You are using single segmentation option which is faster but is not advised if you want large or multiple regions be segmented in one image. In that case click 'Precompute' button. Do you wish to continue with single segmentation?", QMessageBox.Yes | QMessageBox.No)
-            if continueSingle == QMessageBox.No:
-                return
-            self.logic.singleSegmentation()
-            return
+            self.logic.sendImage(partial=False)
 
         self.logic.applySegmentation()
 
@@ -582,7 +574,7 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         else:
             self.ui.pbSegment.setEnabled((self._parameterNode.volumeNode is not None) and (self._parameterNode.roiNode is not None))
             if self._parameterNode.embeddingState == 'SINGLE':
-                self.ui.pbSegment.setText('Segment single')
+                self.ui.pbSegment.setText('Preprocess and Segment')
             elif self._parameterNode.embeddingState == 'FULL':
                 self.ui.pbSegment.setText('Segment')
 
@@ -859,11 +851,6 @@ class MedSAMLiteLogic(ScriptedLoadableModuleLogic):
         slicer.util.updateVolumeFromArray(segment_volume, segmentation_mask_int)
         slicer.util.updateSegmentBinaryLabelmapFromArray(segmentation_mask_int, self.getParameterNode().segmentationNode, segment_volume.GetName(), self._getVolumeNode())
         slicer.mrmlScene.RemoveNode(segment_volume)
-
-    
-    def singleSegmentation(self):
-        self.sendImage(partial=True)
-
     
     def applySegmentation(self):
         segmentation_mask = self.inferSegmentation()
