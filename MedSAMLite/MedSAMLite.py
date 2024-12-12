@@ -210,9 +210,11 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.ui.ctkPathModel.currentPath = os.path.join(self.logic.server_dir, 'medsam_interface/models/classic/medsam_lite.pth')
         ############################################################################
 
-
         ############################################################################
         # Segmentation
+        self.ui.roiOptionsFrame.setVisible(False)
+        self.ui.segmentationOptionsFrame.setVisible(False)
+
         self.ui.segmentationNodeSelector.currentNodeChanged.connect(self.segmentationNodeChanged)
         self.ui.editor.setMaximumNumberOfUndoStates(10)
 
@@ -319,6 +321,7 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         self.ui.cmbSpeed.currentTextChanged.connect(self.setSpeed)
 
         self.ui.pbAttach.connect('clicked(bool)', lambda: self._createAndAttachROI())
+        self.ui.pbPlaceROI.connect('clicked(bool)', lambda: self._placeROI())
         self.ui.pbTwoDim.connect('clicked(bool)', lambda: self.makeROI2D())
         self.ui.pbLowerSelection.connect('clicked(bool)', lambda: self.setROIboundary(lower=True))
         self.ui.pbUpperSelection.connect('clicked(bool)', lambda: self.setROIboundary(lower=False))
@@ -403,6 +406,13 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
         # download checkpoints if necessary
         self.logic.download_if_necessary(current_submodel['url'], current_submodel['checkpoint'])
 
+    def _getOrCreateROI(self):
+        if not self._parameterNode.roiNode:
+            self._parameterNode.roiNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLMarkupsROINode")
+        if not self._parameterNode.roiNode:
+            self._parameterNode.roiNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsROINode", "R")
+        return self._parameterNode.roiNode
+
     def _createAndAttachROI(self):
         # Make sure there is only one 'R'
         if self._parameterNode.volumeNode is None:
@@ -410,20 +420,29 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             return
 
         # Create a new ROI that will be fit to volumeNode
-        if not self._parameterNode.roiNode:
-            self._parameterNode.roiNode = slicer.mrmlScene.GetFirstNodeByClass("vtkMRMLMarkupsROINode")
-        if not self._parameterNode.roiNode:
-            self._parameterNode.roiNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLMarkupsROINode", "R")
+        roiNode = self._getOrCreateROI()
 
         cropVolumeParameters = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLCropVolumeParametersNode")
         cropVolumeParameters.SetInputVolumeNodeID(self._parameterNode.volumeNode.GetID())
-        cropVolumeParameters.SetROINodeID(self._parameterNode.roiNode.GetID())
+        cropVolumeParameters.SetROINodeID(roiNode.GetID())
         slicer.modules.cropvolume.logic().SnapROIToVoxelGrid(cropVolumeParameters)  # optional (rotates the ROI to match the volume axis directions)
         slicer.modules.cropvolume.logic().FitROIToInputVolume(cropVolumeParameters)
         slicer.mrmlScene.RemoveNode(cropVolumeParameters)
 
         self.scaleROI(.85)
 
+    def _placeROI(self):
+        # Make sure there is exactly one 'R'
+        roiNode = self._getOrCreateROI()
+        roiNode.RemoveAllControlPoints()
+
+        selectionNode = slicer.mrmlScene.GetNodeByID("vtkMRMLSelectionNodeSingleton")
+        selectionNode.SetReferenceActivePlaceNodeClassName("vtkMRMLMarkupsROINode")
+        selectionNode.SetReferenceActivePlaceNodeID(roiNode.GetID())
+
+        interactionNode = slicer.mrmlScene.GetNodeByID("vtkMRMLInteractionNodeSingleton")
+        interactionNode.SetPlaceModePersistence(False)  # stop placement mode after placing one ROI
+        interactionNode.SetCurrentInteractionMode(slicer.vtkMRMLInteractionNode().Place)
     
     def scaleROI(self, ratio):
         # Make sure there is exactly one 'R'
@@ -433,14 +452,14 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     
     def makeROI2D(self):
         # Make sure there is exactly one 'R'
-        roiNode = self._parameterNode.roiNode
+        roiNode = self._getOrCreateROI()
         roi_size = roiNode.GetSize()
         roiNode.SetSize(roi_size[0], roi_size[1], 1)
         roi_center = np.array(roiNode.GetCenter())
         roiNode.SetCenter([roi_center[0], roi_center[1], slicer.app.layoutManager().sliceWidget("Red").sliceLogic().GetSliceOffset()])
     
     def setROIboundary(self, lower):
-        roiNode = self._parameterNode.roiNode
+        roiNode = roiNode = self._getOrCreateROI()
         
         bounds = np.zeros(6)
         roiNode.GetBounds(bounds)
@@ -539,6 +558,12 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     
     
     def updateGUIFromParameterNode(self, unused1=None, unused2=None):
+        if self._parameterNode is None:
+            self.ui.editor.setSegmentationNode(None)
+            self.ui.widgetROI.setMRMLMarkupsNode(None)
+            self.ui.pbSegment.setEnabled(False)
+            return
+
         self.ui.editor.setSegmentationNode(self._parameterNode.segmentationNode)
         if self._parameterNode.segmentationNode:
             self.ui.editor.setSourceVolumeNode(self._parameterNode.volumeNode)
@@ -548,7 +573,7 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self.ui.pbSegment.setEnabled(False)
             self.ui.pbSegment.setText('Processing, please wait...')
         else:
-            self.ui.pbSegment.setEnabled(True)
+            self.ui.pbSegment.setEnabled((self._parameterNode.volumeNode is not None) and (self._parameterNode.roiNode is not None))
             if self._parameterNode.embeddingState == 'SINGLE':
                 self.ui.pbSegment.setText('Segment single')
             elif self._parameterNode.embeddingState == 'FULL':
