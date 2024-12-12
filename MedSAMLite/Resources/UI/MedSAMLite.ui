@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>739</width>
-    <height>1206</height>
+    <width>428</width>
+    <height>864</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -24,7 +24,14 @@
       <string>Prepare Data</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="2" column="0">
+      <item row="4" column="0" colspan="2">
+       <widget class="QPushButton" name="pbApplyPrep">
+        <property name="text">
+         <string>Apply</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
        <widget class="ctkSliderWidget" name="sldWinLevel">
         <property name="decimals">
          <number>1</number>
@@ -38,9 +45,26 @@
         <property name="value">
          <double>40.000000000000000</double>
         </property>
+        <property name="SlicerParameterName" stdset="0">
+         <string>prepWinLevel</string>
+        </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="1" column="0">
+       <widget class="QLabel" name="lblPrepOption">
+        <property name="text">
+         <string>Preprocessing Options:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="lblLevel">
+        <property name="text">
+         <string>Window Level:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
        <widget class="ctkSliderWidget" name="sldWinWidth">
         <property name="decimals">
          <number>1</number>
@@ -51,36 +75,53 @@
         <property name="value">
          <double>400.000000000000000</double>
         </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cmbPrepOptions"/>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="lblLevel">
-        <property name="text">
-         <string>Window Level:</string>
+        <property name="SlicerParameterName" stdset="0">
+         <string>prepWinWidth</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
+       <widget class="QComboBox" name="cmbPrepOptions">
+        <property name="currentText">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
        <widget class="QLabel" name="lblWidth">
         <property name="text">
          <string>Window Width:</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="lblPrepOption">
-        <property name="text">
-         <string>Preprocessing Options:</string>
+      <item row="0" column="1">
+       <widget class="qMRMLNodeComboBox" name="qNodeSelect">
+        <property name="nodeTypes">
+         <stringlist notr="true">
+          <string>vtkMRMLScalarVolumeNode</string>
+         </stringlist>
+        </property>
+        <property name="hideChildNodeTypes">
+         <stringlist notr="true"/>
+        </property>
+        <property name="addEnabled">
+         <bool>false</bool>
+        </property>
+        <property name="removeEnabled">
+         <bool>false</bool>
+        </property>
+        <property name="interactionNodeSingletonTag">
+         <string notr="true"/>
+        </property>
+        <property name="SlicerParameterName" stdset="0">
+         <string>volumeNode</string>
         </property>
        </widget>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QPushButton" name="pbApplyPrep">
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblPrepOption_2">
         <property name="text">
-         <string>Apply</string>
+         <string>Source Volume:</string>
         </property>
        </widget>
       </item>
@@ -133,7 +174,7 @@
       <string>Start Segmentation</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="2" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="lblModelSelection">
         <property name="text">
          <string>MedSAM Model:</string>
@@ -141,13 +182,40 @@
        </widget>
       </item>
       <item row="1" column="0">
+       <widget class="QLabel" name="lblEngineSelection">
+        <property name="text">
+         <string>Engine:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="2">
+       <widget class="qMRMLSegmentEditorWidget" name="editor">
+        <property name="segmentationNodeSelectorVisible">
+         <bool>false</bool>
+        </property>
+        <property name="sourceVolumeNodeSelectorVisible">
+         <bool>false</bool>
+        </property>
+        <property name="defaultTerminologyEntrySettingsKey">
+         <string notr="true"/>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="lblModelSelection_2">
+        <property name="text">
+         <string>Quality:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <widget class="QLabel" name="lblSubModel">
         <property name="text">
          <string>Submodel:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="3" column="1">
        <widget class="ctkPathLineEdit" name="ctkPathModel">
         <property name="filters">
          <set>ctkPathLineEdit::Executable|ctkPathLineEdit::Files|ctkPathLineEdit::NoDot|ctkPathLineEdit::NoDotDot|ctkPathLineEdit::Readable</set>
@@ -160,40 +228,89 @@
           <string>*.ckpt</string>
          </stringlist>
         </property>
+        <property name="SlicerParameterName" stdset="0">
+         <string>modelPath</string>
+        </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cmbEngine"/>
-      </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QComboBox" name="cmbSpeed"/>
-      </item>
-      <item row="4" column="0">
+      <item row="5" column="0">
        <widget class="QPushButton" name="pbSendImage">
         <property name="text">
-         <string>Send Image</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="lblEngineSelection">
-        <property name="text">
-         <string>Select Engine:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QPushButton" name="pbSegment">
-        <property name="text">
-         <string>Segmentation</string>
+         <string>Preprocess</string>
         </property>
        </widget>
       </item>
       <item row="1" column="1">
+       <widget class="QComboBox" name="cmbEngine"/>
+      </item>
+      <item row="2" column="1">
        <widget class="QComboBox" name="cmbSubModel"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="cmbSpeed"/>
+      </item>
+      <item row="5" column="1">
+       <widget class="QPushButton" name="pbSegment">
+        <property name="text">
+         <string>Segment</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="qMRMLNodeComboBox" name="segmentationNodeSelector">
+        <property name="nodeTypes">
+         <stringlist notr="true">
+          <string>vtkMRMLScalarVolumeNode</string>
+         </stringlist>
+        </property>
+        <property name="hideChildNodeTypes">
+         <stringlist notr="true"/>
+        </property>
+        <property name="noneEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="addEnabled">
+         <bool>false</bool>
+        </property>
+        <property name="removeEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="renameEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="interactionNodeSingletonTag">
+         <string notr="true"/>
+        </property>
+        <property name="noneDisplay">
+         <string>(Create new)</string>
+        </property>
+        <property name="SlicerParameterName" stdset="0">
+         <string>segmentationNode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblPrepOption_3">
+        <property name="text">
+         <string>Output segmentation:</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>
@@ -215,6 +332,11 @@
    <header>ctkSliderWidget.h</header>
   </customwidget>
   <customwidget>
+   <class>qMRMLNodeComboBox</class>
+   <extends>QWidget</extends>
+   <header>qMRMLNodeComboBox.h</header>
+  </customwidget>
+  <customwidget>
    <class>qMRMLWidget</class>
    <extends>QWidget</extends>
    <header>qMRMLWidget.h</header>
@@ -225,7 +347,77 @@
    <extends>QWidget</extends>
    <header>qMRMLMarkupsROIWidget.h</header>
   </customwidget>
+  <customwidget>
+   <class>qMRMLSegmentEditorWidget</class>
+   <extends>qMRMLWidget</extends>
+   <header>qMRMLSegmentEditorWidget.h</header>
+  </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>t_SegmentData</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>qNodeSelect</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>423</x>
+     <y>859</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>340</x>
+     <y>87</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>t_SegmentData</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>editor</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>312</x>
+     <y>859</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>87</x>
+     <y>729</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>t_SegmentData</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>segmentationNodeSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>368</x>
+     <y>857</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>252</x>
+     <y>561</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>segmentationNodeSelector</sender>
+   <signal>currentNodeChanged(vtkMRMLNode*)</signal>
+   <receiver>editor</receiver>
+   <slot>setSegmentationNode(vtkMRMLNode*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>216</x>
+     <y>557</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>236</x>
+     <y>726</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
