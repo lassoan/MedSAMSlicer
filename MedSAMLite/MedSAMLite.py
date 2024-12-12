@@ -343,6 +343,13 @@ class MedSAMLiteWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
             self._parameterNode.segmentationNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLSegmentationNode")
             self._parameterNode.segmentationNode.SetReferenceImageGeometryParameterFromVolumeNode(self._parameterNode.volumeNode)
 
+        if self._parameterNode.embeddingState == 'SINGLE':
+            continueSingle = QMessageBox.question(None,'', "You are using single segmentation option which is faster but is not advised if you want large or multiple regions be segmented in one image. In that case click 'Precompute' button. Do you wish to continue with single segmentation?", QMessageBox.Yes | QMessageBox.No)
+            if continueSingle == QMessageBox.No:
+                return
+            self.logic.singleSegmentation()
+            return
+
         self.logic.applySegmentation()
 
     def volumeChanged(self, volumeNode):
@@ -789,7 +796,7 @@ class MedSAMLiteLogic(ScriptedLoadableModuleLogic):
 
     def captureImage(self):
         ######## Set your image path here
-        self.image_data = slicer.util.arrayFromVolume(self._getVolumeNode())
+        self.image_data = slicer.util.arrayFromVolume(self._getVolumeNode()).copy()
         if len(self.image_data.shape) == 4 and self.image_data.shape[-1] == 4:    # colored image, it can have 4 channels (r,g,b,a) so we remove the last one
             self.image_data = self.image_data[:,:,:,:3]
     
@@ -859,12 +866,6 @@ class MedSAMLiteLogic(ScriptedLoadableModuleLogic):
 
     
     def applySegmentation(self):
-        if self.getParameterNode().embeddingState == 'SINGLE':
-            continueSingle = QMessageBox.question(None,'', "You are using single segmentation option which is faster but is not advised if you want large or multiple regions be segmented in one image. In that case click 'Send Image' button. Do you wish to continue with single segmentation?", QMessageBox.Yes | QMessageBox.No)
-            if continueSingle == QMessageBox.No: return
-            self.singleSegmentation()
-
-            return
         segmentation_mask = self.inferSegmentation()
         self.showSegmentation(segmentation_mask)
     
